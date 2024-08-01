@@ -376,7 +376,7 @@ export function AmbienteTemplate() {
             />
             <AmbienteSelect
               value={updateAmbiente.municipio}
-              onChange={(e) => setUpdateAmbiente({ ...updateAmbiente, municipio: e.target.value })}
+              onChange={(e) => setUpdateAmbiente({ ...updateAmbiente, nombre_mpio: e.target.value })}
             >
               <option value="">Seleccionar Municipio</option>
               {municipios.map((municipio) => (

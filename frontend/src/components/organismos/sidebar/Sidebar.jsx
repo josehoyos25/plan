@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import styled from "styled-components";
 import {
   LinksArray,
@@ -8,15 +7,14 @@ import {
 import { v } from "../../../styles/variables";
 import { NavLink } from "react-router-dom";
 
-export function Sidebar() {
-  const [isHovered, setIsHovered] = useState(false);
-
+export function Sidebar({ state, setState }) {
   return (
-    <Main
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <Container $isopen={isHovered.toString()}>
+    <Main $isopen={state.toString()}>
+      <span className="Sidebarbutton" onClick={() => setState(!state)}>
+        {/* Puedes reemplazar el ícono según tu diseño */}
+        <v.iconoflechaderecha />
+      </span>
+      <Container $isopen={state.toString()} className={state ? "active" : ""}>
         <div className="Logocontent">
           <div className="imgcontent">
             <img src={v.logo} alt="Logo" />
@@ -29,7 +27,7 @@ export function Sidebar() {
               className={({ isActive }) => `Links${isActive ? ` active` : ``}`}
             >
               <div className="Linkicon">{icon}</div>
-              <span className={isHovered ? "label_ver" : "label_oculto"}>
+              <span className={state ? "label_ver" : "label_oculto"}>
                 {label}
               </span>
             </NavLink>
@@ -43,14 +41,15 @@ export function Sidebar() {
               className={({ isActive }) => `Links${isActive ? ` active` : ``}`}
             >
               <div className="Linkicon">{icon}</div>
-              <span className={isHovered ? "label_ver" : "label_oculto"}>
+              <span className={state ? "label_ver" : "label_oculto"}>
                 {label}
               </span>
             </NavLink>
           </LinkContainer>
         ))}
+        {/* Eliminado ToggleTema */}
         <Divider />
-        {isHovered && <SidebarCard />}
+        {state && <SidebarCard />}
       </Container>
     </Main>
   );
@@ -63,11 +62,10 @@ const Container = styled.div`
   padding-top: 20px;
   z-index: 1;
   height: 100%;
-  width: ${({ $isopen }) => ($isopen === "true" ? "220px" : "65px")};
-  transition: width 0.3s ease-in-out;
+  width: 65px;
+  transition: 0.3s ease-in-out;
   overflow-y: auto;
   overflow-x: hidden;
-  left: 0;
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -76,6 +74,10 @@ const Container = styled.div`
   &::-webkit-scrollbar-thumb {
     background-color: ${v.gray};
     border-radius: 10px;
+  }
+
+  &.active {
+    width: 220px;
   }
 
   .Logocontent {
@@ -91,7 +93,7 @@ const Container = styled.div`
       transition: 0.3s ease-in-out;
       cursor: pointer;
       img {
-        width: ${({ $isopen }) => ($isopen === "true" ? "120px" : "50px")};
+        width: ${({ $isopen }) => ($isopen === "true" ? "120px" : "50px")}; /* Ajusta el tamaño aquí */
         height: auto;
         transition: width 0.3s ease-in-out;
         animation: flotar 1.7s ease-in-out infinite alternate;
@@ -168,12 +170,33 @@ const LinkContainer = styled.div`
 `;
 
 const Main = styled.div`
-  /* Remove the Sidebarbutton styling */
+  .Sidebarbutton {
+    position: fixed;
+    top: 70px;
+    left: 42px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: ${v.primary}; /* Cambiado para un color específico */
+    box-shadow: 0 0 4px ${v.gray},
+      0 0 7px ${v.gray};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 2;
+    transform: ${({ $isopen }) =>
+      $isopen === "true"
+        ? `translateX(162px) rotate(3.142rad)`
+        : `initial`};
+    color: ${v.text}; /* Cambiado para un color específico */
+  }
 `;
 
 const Divider = styled.div`
   height: 1px;
   width: 100%;
-  background: ${v.gray};
+  background: ${v.gray}; /* Cambiado para un color específico */
   margin: ${() => v.lgSpacing} 0;
 `;
