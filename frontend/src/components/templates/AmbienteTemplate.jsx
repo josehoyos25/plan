@@ -218,6 +218,7 @@ export function AmbienteTemplate() {
       //  sede: "",
       //  estado: "activo"
       //});
+      window.location.reload();
     } catch (error) {
       console.error("Error al crear ambiente:", error);
     }

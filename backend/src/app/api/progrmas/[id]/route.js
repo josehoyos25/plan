@@ -11,56 +11,50 @@ return new NextResponse("Ficha not found", { status: 404 });
 
 export async function GET(request, { params }) {
 try {
-    const codigo = parseInt(params.codigo);
-    const ficha = await prisma.fichas.findFirst({
-    where: { codigo },
+    const programa = await prisma.programas.findFirst({
     include: {
-        sede: true,
-        estado: true,
-        programa: {
-        include: {
-            nivel: true,
-            estado: true,
-        },
-        },
+
     },
     });
-    if (!ficha) {
+    if (!programa) {
     return handleNotFound();
     }
-    return NextResponse.json(ficha);
+    return NextResponse.json(programa);
 } catch (error) {
     return handleErrors(error);
 }
 }
 
 export async function DELETE(request, { params }) {
-try {
-    const codigo = parseInt(params.codigo);
-    await prisma.fichas.delete({ where: { codigo } });
-    return NextResponse.json({ message: "Ficha deleted successfully" }, { status: 200 });
-} catch (error) {
-    return handleErrors(error);
-}
-}
+    try {
+      const id = parseInt(params.id);
+      if (isNaN(id)){
+        return NextResponse.json({ error: 'ID del programa inválido' }, { status: 400 });
+      }
+      const programa = await prisma.programas.delete({
+        where: { id_programa: parseInt(params.id) },
+      })
+      return NextResponse.json({ message: "Programa eliminado",programa }, { status: 200 });
+    } catch (error) {
+      return handleErrors(error);
+    }
+  }
 
-export async function PUT(request, { params }) {
-try {
-    const codigo = parseInt(params.codigo);
-    const data = await request.json();
-    const updatedFicha = await prisma.fichas.update({
-    where: { codigo },
-    data: {
-        inicio_ficha: data.inicio_ficha,
-        fin_lectiva: data.fin_lectiva,
-        fin_ficha: data.fin_ficha,
-        programa: { connect: { id_programa: data.programaId } },
-        sede: { connect: { id_sede: data.sedeId } },
-        estado: { connect: { id_estado: data.estadoId } },
-    },
-    });
-    return NextResponse.json({ message: "Ficha updated successfully" }, { status: 200 });
-} catch (error) {
-    return handleErrors(error);
-}
-}
+  export async function PUT(request, { params }) {
+    try {
+        const id = parseInt(params.id);
+        const data = await request.json();
+        const updatedPrograma = await prisma.programas.update({
+        where: { id_programa: parseInt(params.id) },
+        data: {
+            nombre_programa: data.nombre_programa,
+            sigla: data.sigla,
+            nivel: data. nivel,
+            estado: data.estado,
+        },
+        });
+        return NextResponse.json({ message: "Programa Actualizado" }, { status: 200 });
+    } catch (error) {
+        return handleErrors(error);
+    }
+    }
