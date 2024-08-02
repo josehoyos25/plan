@@ -167,10 +167,11 @@ export function AmbienteTemplate() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ambientesResponse = await axiosCliente.get("http://localhost:3000/api/ambientes", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setAmbientes(ambientesResponse.data.datos);
+        //const ambientesResponse = await axiosCliente.get("http://localhost:3000/api/ambientes", {
+        //  headers: { Authorization: `Bearer ${token}` }
+        //});
+        //setAmbientes(ambientesResponse.data.datos);
+        listarAmbientes();
 
         const municipiosResponse = await axiosCliente.get("http://localhost:3000/api/municipios", {
           headers: { Authorization: `Bearer ${token}` }
@@ -185,6 +186,15 @@ export function AmbienteTemplate() {
     fetchData();
   }, [token]);
 
+    // Funncion listar ambientes para reutilizar
+    const listarAmbientes = async () => {
+      const ambientesResponse = await axiosCliente.get(
+        "http://localhost:3000/api/ambientes",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAmbientes(ambientesResponse.data.datos);
+    };
+
   const handleCreateAmbiente = async (event) => {
     event.preventDefault();
     if (newAmbiente.nombre_amb.trim() === "") {
@@ -197,13 +207,17 @@ export function AmbienteTemplate() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setAmbientes([...ambientes, response.data.datos]);
-      setNewAmbiente({
-        nombre_amb: "",
-        municipio: "",
-        sede: "",
-        estado: "activo"
-      });
+      //llamar la peticion para listar ambientes
+      listarAmbientes();
+      
+
+      //setAmbientes([...ambientes, response.data.datos]);
+      //setNewAmbiente({
+      //  nombre_amb: "",
+      //  municipio: "",
+      //  sede: "",
+      //  estado: "activo"
+      //});
     } catch (error) {
       console.error("Error al crear ambiente:", error);
     }

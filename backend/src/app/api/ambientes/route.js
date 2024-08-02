@@ -28,7 +28,7 @@ export async function POST(request) {
     const ambiente = await prisma.ambientes.create({
       data: {
         nombre_amb: data.nombre_amb,
-        municipio: data.municipio,
+        municipio: Number(data.municipio),
         sede: data.sede,
       },
     });

@@ -16,7 +16,7 @@ export function InstructorTemplate() {
       try {
         const response = await fetch("/api/fichas");
         const data = await response.json();
-        setFichas(data);
+        setFichas(data.data);
       } catch (error) {
         console.error("Error al obtener fichas:", error);
       }
