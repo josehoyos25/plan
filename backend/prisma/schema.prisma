@@ -90,7 +90,7 @@ model Programas {
   nombre_programa String
   sigla          String
   nivel          Nivel
-  estado         Estado
+  estado         Estado @default(activo)
 
   Fichas Fichas[]
 }

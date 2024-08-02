@@ -26,7 +26,7 @@ try {
         nombre_programa: data.nombre_programa,
         sigla: data.sigla,
         nivel: data.nivel,
-        estado: estado,
+        
     },
     });
     return new NextResponse(JSON.stringify(programa), {
