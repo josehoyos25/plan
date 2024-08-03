@@ -64,7 +64,7 @@ export async function PUT(request, { params }) {
         municipio: data.municipio,
       },
     });
-    return NextResponse.json({ message: "Persona updated successfully", persona: updatedPersona }, { status: 200 });
+    return NextResponse.json({ message: "Persona Actualizada", persona: updatedPersona }, { status: 200 });
   } catch (error) {
     return handleErrors(error);
   }

@@ -9,8 +9,11 @@ export async function GET() {
   try {
     const fichas = await prisma.fichas.findMany({
       include: {
-        Programas: true, // Relación con Programas
-        // Nota: "estado" y "sede" ya son enums, no modelos relacionados, así que no se necesitan incluir aquí
+        Programas: {
+          select: {
+            nombre_programa: true,
+          }
+        }
       },
     });
     return NextResponse.json({ datos: fichas }, { status: 200 });

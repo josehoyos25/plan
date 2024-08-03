@@ -47,13 +47,13 @@ export async function DELETE(request, { params }) {
         const updatedPrograma = await prisma.programas.update({
         where: { id_programa: parseInt(params.id) },
         data: {
-            nombre_programa: data.nombre_programa,
+            nombre_programa: Number(data.nombre_programa),
             sigla: data.sigla,
             nivel: data. nivel,
             estado: data.estado,
         },
         });
-        return NextResponse.json({ message: "Programa Actualizado" }, { status: 200 });
+        return NextResponse.json({ message: "Programa Actualizado", programa: updatedPrograma }, { status: 200 });
     } catch (error) {
         return handleErrors(error);
     }

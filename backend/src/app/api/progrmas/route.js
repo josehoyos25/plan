@@ -9,6 +9,7 @@ export async function GET() {
 try {
     const programa = await prisma.programas.findMany({
     include: {
+        
 
     },
     });

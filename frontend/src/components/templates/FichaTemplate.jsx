@@ -1,10 +1,15 @@
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axiosCliente from "../axioCliente.js";
+
+// Opciones de sedes (modificadas para que coincidan con el formato de ambientes)
+const SEDE_OPTIONS = [
+  { value: "centro", label: "Centro" },
+  { value: "Yamboro", label: "Yamboró" },
+];
 
 export function FichaTemplate() {
   const [fichasData, setFichasData] = useState([]);
-  const [programas, setProgramas] = useState([]);
   const [newFicha, setNewFicha] = useState({
     codigo: "",
     inicio_fecha: "",
@@ -14,29 +19,26 @@ export function FichaTemplate() {
     sede: "",
     estado: "",
   });
+  const [selectedFicha, setSelectedFicha] = useState(null); // Estado para la ficha seleccionada
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [programas, setProgramas] = useState([]);
+  const estados = ["lectiva", "electiva", "finalizada"]; // Opciones de estado
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const fichasRes = await axios.get("/api/fichas");
-        if (fichasRes.data.datos) {
-          setFichasData(fichasRes.data.datos);
+        const res = await axiosCliente.get("/fichas");
+        console.log(res.data); // Muestra la estructura de la respuesta en consola
+        if (Array.isArray(res.data.datos)) {
+          setFichasData(res.data.datos); // Accede al array 'datos'
         } else {
-          throw new Error("La respuesta de fichas no es válida");
-        }
-
-        // Obtener la lista de programas
-        const programasRes = await axios.get("/api/programas");
-        if (programasRes.data.datos) {
-          setProgramas(programasRes.data.datos);
-        } else {
-          throw new Error("La respuesta de programas no es válida");
+          throw new Error("La respuesta no contiene un arreglo de datos");
         }
       } catch (error) {
-        setError(error.message);
+        setError("Error al cargar las fichas.");
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -45,11 +47,57 @@ export function FichaTemplate() {
     fetchData();
   }, []);
 
-  const handleCreate = async (e) => {
+  useEffect(() => {
+    // Carga los datos para los selects de programa
+    const fetchSelectData = async () => {
+      try {
+        const programasRes = await axiosCliente.get("/progrmas");
+        setProgramas(programasRes.data);
+      } catch (error) {
+        console.error("Error al cargar los datos para selects:", error);
+      }
+    };
+
+    fetchSelectData();
+  }, []);
+
+  const handleCreateOrUpdate = async (e) => {
     e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (
+      !newFicha.codigo ||
+      !newFicha.inicio_fecha ||
+      !newFicha.fin_lectiva ||
+      !newFicha.fin_ficha ||
+      !newFicha.programa ||
+      !newFicha.sede ||
+      !newFicha.estado
+    ) {
+      setError("Todos los campos son obligatorios.");
+      return;
+    }
+
     try {
-      const res = await axios.post("/api/fichas", newFicha);
-      setFichasData([...fichasData, res.data]);
+      if (selectedFicha) {
+        // Si hay una ficha seleccionada, actualiza
+        const res = await axiosCliente.put(
+          `/fichas/${selectedFicha.codigo}`,
+          newFicha
+        );
+        setFichasData(
+          fichasData.map((ficha) =>
+            ficha.codigo === selectedFicha.codigo ? res.data : ficha
+          )
+        );
+        setSuccess("Ficha actualizada con éxito.");
+      } else {
+        // Si no hay ficha seleccionada, crea una nueva
+        const res = await axiosCliente.post("/fichas", newFicha);
+        setFichasData([...fichasData, res.data]);
+        setSuccess("Ficha creada con éxito.");
+      }
       setNewFicha({
         codigo: "",
         inicio_fecha: "",
@@ -59,22 +107,38 @@ export function FichaTemplate() {
         sede: "",
         estado: "",
       });
-      setSuccess("Ficha creada con éxito.");
+      setSelectedFicha(null); // Restablecer la ficha seleccionada
     } catch (error) {
       console.error(error);
-      setError("Error al crear la ficha.");
+      setError("Error al guardar la ficha.");
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (codigo) => {
+    setError(null);
+    setSuccess(null);
+
     try {
-      await axios.delete(`/api/fichas/${id}`);
-      setFichasData(fichasData.filter((ficha) => ficha.codigo !== id));
+      await axiosCliente.delete(`/fichas/${codigo}`);
+      setFichasData(fichasData.filter((ficha) => ficha.codigo !== codigo));
       setSuccess("Ficha eliminada con éxito.");
     } catch (error) {
       console.error(error);
       setError("Error al eliminar la ficha.");
     }
+  };
+
+  const handleEdit = (ficha) => {
+    setNewFicha({
+      codigo: ficha.codigo,
+      inicio_fecha: ficha.inicio_fecha.slice(0, 10), // Formato de fecha correcto para el input
+      fin_lectiva: ficha.fin_lectiva.slice(0, 10),
+      fin_ficha: ficha.fin_ficha.slice(0, 10),
+      programa: ficha.programa.id_programa, // Asegúrate de usar el ID del programa
+      sede: ficha.sede, // Cambiado para usar el valor de sede directamente
+      estado: ficha.estado,
+    });
+    setSelectedFicha(ficha);
   };
 
   const handleChange = (e) => {
@@ -83,278 +147,240 @@ export function FichaTemplate() {
   };
 
   return (
-    <Container>
+    <MainContainer>
       <Header>
         <Title>Gestión de Fichas</Title>
       </Header>
-      <Form onSubmit={handleCreate}>
-        <FormGroup>
-          <Input
-            type="number"
-            name="codigo"
-            value={newFicha.codigo}
-            onChange={handleChange}
-            placeholder="Código"
-            required
-          />
-          <Input
-            type="date"
-            name="inicio_fecha"
-            value={newFicha.inicio_fecha}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            type="date"
-            name="fin_lectiva"
-            value={newFicha.fin_lectiva}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            type="date"
-            name="fin_ficha"
-            value={newFicha.fin_ficha}
-            onChange={handleChange}
-            required
-          />
-          <Select
-            name="programa"
-            value={newFicha.programa}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Seleccionar Programa</option>
-            {programas.map((programa) => (
-              <option key={programa.id_programa} value={programa.id_programa}>
-                {programa.nombre_programa}
-              </option>
-            ))}
-          </Select>
-          <Input
-            type="text"
-            name="sede"
-            value={newFicha.sede}
-            onChange={handleChange}
-            placeholder="Sede"
-            required
-          />
-          <Input
-            type="text"
-            name="estado"
-            value={newFicha.estado}
-            onChange={handleChange}
-            placeholder="Estado"
-            required
-          />
-        </FormGroup>
-        <Button type="submit">Crear Ficha</Button>
-        {success && <Message success>{success}</Message>}
-        {error && <Message>{error}</Message>}
-      </Form>
-      {loading ? (
-        <Loading>Loading...</Loading>
-      ) : (
-        <Table>
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Inicio</th>
-              <th>Fin Lectiva</th>
-              <th>Fin Ficha</th>
-              <th>Programa</th>
-              <th>Sede</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {fichasData.map((ficha) => (
-              <tr key={ficha.codigo}>
-                <td>{ficha.codigo}</td>
-                <td>{new Date(ficha.inicio_fecha).toLocaleDateString()}</td>
-                <td>{new Date(ficha.fin_lectiva).toLocaleDateString()}</td>
-                <td>{new Date(ficha.fin_ficha).toLocaleDateString()}</td>
-                <td>{programas.find((p) => p.id_programa === ficha.programa)?.nombre_programa}</td>
-                <td>{ficha.sede}</td>
-                <td>{ficha.estado}</td>
-                <td>
-                  <ActionButton onClick={() => handleDelete(ficha.codigo)}>
-                    Eliminar
-                  </ActionButton>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
-    </Container>
+      <Content>
+        <Form onSubmit={handleCreateOrUpdate}>
+          <FormGroup>
+            <Label htmlFor="codigo">Código</Label>
+            <Input
+              type="number"
+              name="codigo"
+              value={newFicha.codigo}
+              onChange={handleChange}
+              placeholder="Código"
+              required
+              disabled={selectedFicha !== null} // Desactivar durante la edición
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="inicio_fecha">Fecha de Inicio</Label>
+            <Input
+              type="date"
+              name="inicio_fecha"
+              value={newFicha.inicio_fecha}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="fin_lectiva">Fin Lectiva</Label>
+            <Input
+              type="date"
+              name="fin_lectiva"
+              value={newFicha.fin_lectiva}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="fin_ficha">Fin Ficha</Label>
+            <Input
+              type="date"
+              name="fin_ficha"
+              value={newFicha.fin_ficha}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="programa">Programa</Label>
+            <Select
+              name="programa"
+              value={newFicha.programa}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Seleccione un programa</option>
+              {programas.map((programa) => (
+                <option key={programa.id_programa} value={programa.id_programa}>
+                  {programa.nombre_programa}
+                </option>
+              ))}
+            </Select>
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="sede">Sede</Label>
+            <Select
+              name="sede"
+              value={newFicha.sede}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Seleccione una sede</option>
+              {SEDE_OPTIONS.map((sede) => (
+                <option key={sede.value} value={sede.value}>
+                  {sede.label}
+                </option>
+              ))}
+            </Select>
+          </FormGroup>
+          <FormGroup>
+            <Label htmlFor="estado">Estado</Label>
+            <Select
+              name="estado"
+              value={newFicha.estado}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Seleccione un estado</option>
+              {estados.map((estado) => (
+                <option key={estado} value={estado}>
+                  {estado}
+                </option>
+              ))}
+            </Select>
+          </FormGroup>
+          <Button type="submit">
+            {selectedFicha ? "Actualizar Ficha" : "Crear Ficha"}
+          </Button>
+          {success && <Message success>{success}</Message>}
+          {error && <Message>{error}</Message>}
+        </Form>
+        {loading ? (
+          <Loading>Cargando...</Loading>
+        ) : (
+          <TableContainer>
+            <Table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Inicio Fecha</th>
+                  <th>Fin Lectiva</th>
+                  <th>Fin Ficha</th>
+                  <th>Programa</th>
+                  <th>Sede</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {fichasData.map((ficha) => (
+                  <tr key={ficha.codigo}>
+                    <td>{ficha.codigo}</td>
+                    <td>{ficha.inicio_fecha.slice(0, 10)}</td>
+                    <td>{ficha.fin_lectiva.slice(0, 10)}</td>
+                    <td>{ficha.fin_ficha.slice(0, 10)}</td>
+                    <td>{ficha.programa.nombre_programa}</td> {/* Asegúrate de que esto sea correcto */}
+                    <td>{ficha.sede}</td>
+                    <td>{ficha.estado}</td>
+                    <td>
+                      <button onClick={() => handleEdit(ficha)}>Editar</button>
+                      <button onClick={() => handleDelete(ficha.codigo)}>
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </TableContainer>
+        )}
+      </Content>
+    </MainContainer>
   );
 }
 
-// Estilos usando styled-components
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  padding: 30px;
-  background-color: ${(props) => props.theme.background};
-  color: ${({ theme }) => theme.text};
+// Componentes estilizados para el formulario
+const MainContainer = styled.div`
+  padding: 20px;
 `;
 
-const Header = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
+const Header = styled.header`
+  background: #f4f4f4;
+  padding: 10px 0;
 `;
 
 const Title = styled.h1`
-  font-size: 2.5rem;
-  color: ${(props) => props.theme.primary};
-  font-weight: bold;
   text-align: center;
 `;
 
-const Form = styled.form`
+const Content = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+`;
+
+const Form = styled.form`
   width: 100%;
   max-width: 600px;
-  background: ${(props) => props.theme.formBackground};
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
 `;
 
 const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
   margin-bottom: 15px;
 `;
 
-const Input = styled.input`
-  margin: 5px 0;
-  padding: 10px;
-  border: 1px solid ${(props) => props.theme.border};
-  border-radius: 5px;
-  width: calc(100% - 22px);
-  box-sizing: border-box;
-  transition: border-color 0.3s ease;
+const Label = styled.label`
+  display: block;
+  margin-bottom: 5px;
+`;
 
-  &:focus {
-    border-color: ${(props) => props.theme.primary};
-    outline: none;
-  }
+const Input = styled.input`
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
 `;
 
 const Select = styled.select`
-  margin: 5px 0;
-  padding: 10px;
-  border: 1px solid ${(props) => props.theme.border};
-  border-radius: 5px;
-  width: calc(100% - 22px);
+  width: 100%;
+  padding: 8px;
   box-sizing: border-box;
-  transition: border-color 0.3s ease;
-
-  &:focus {
-    border-color: ${(props) => props.theme.primary};
-    outline: none;
-  }
 `;
 
 const Button = styled.button`
-  background-color: ${(props) => props.theme.primary};
-  color: ${(props) => props.theme.text};
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: #fff;
   border: none;
-  padding: 12px 24px;
-  border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 5px;
+  font-size: 16px;
 
   &:hover {
-    background-color: ${(props) => props.theme.primaryDark};
-    transform: scale(1.02);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    background-color: #0056b3;
   }
+`;
 
-  &:active {
-    transform: scale(0.98);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
+const Message = styled.div`
+  margin-top: 15px;
+  color: ${(props) => (props.success ? "green" : "red")};
+`;
+
+const Loading = styled.div`
+  text-align: center;
+  margin: 20px 0;
+`;
+
+const TableContainer = styled.div`
+  margin-top: 20px;
+  width: 100%;
+  max-width: 600px;
 `;
 
 const Table = styled.table`
   width: 100%;
-  max-width: 1200px;
   border-collapse: collapse;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: left;
 
-  thead {
-    background-color: ${(props) => props.theme.headerBg};
-    color: ${(props) => props.theme.headerText};
-    font-weight: bold;
+  th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
   }
 
-  th,
-  td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid ${(props) => props.theme.border};
-  }
-
-  tbody tr:nth-of-type(even) {
-    background-color: ${(props) => props.theme.rowEven};
-  }
-
-  tbody tr:nth-of-type(odd) {
-    background-color: ${(props) => props.theme.rowOdd};
-  }
-
-  tr:hover {
-    background-color: ${(props) => props.theme.rowHover};
-    transition: background-color 0.3s ease;
+  th {
+    background-color: #f4f4f4;
   }
 `;
 
-const ActionButton = styled.button`
-  background-color: ${(props) => props.theme.actionBg};
-  color: ${(props) => props.theme.text};
-  border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: ${(props) => props.theme.actionBgDark};
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-`;
-
-const Loading = styled.div`
-  font-size: 1.2rem;
-  color: ${(props) => props.theme.text};
-`;
-
-const Message = styled.div`
-  font-size: 1rem;
-  color: ${(props) => (props.success ? "green" : "red")};
-  margin: 10px 0;
-  text-align: center;
-  background-color: ${(props) => (props.success ? "#d4edda" : "#f8d7da")};
-  border: 1px solid ${(props) => (props.success ? "#c3e6cb" : "#f5c6cb")};
-  padding: 10px;
-  border-radius: 5px;
-`;
