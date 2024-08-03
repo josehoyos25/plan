@@ -28,11 +28,11 @@ export async function POST(request) {
       const data = await request.json();
       const ficha = await prisma.fichas.create({
         data: {
-          codigo: data.codigo,
+          codigo: Number(data.codigo),
           inicio_fecha: new Date(data.inicio_fecha),
           fin_lectiva: new Date(data.fin_lectiva),
           fin_ficha: new Date(data.fin_ficha),
-          programa: data.programa, // Pass the id_programa value directly
+          programa: Number(data.programa), // Pass the id_programa value directly
           sede: data.sede,
           estado: data.estado,
         },

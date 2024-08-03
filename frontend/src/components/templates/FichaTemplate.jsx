@@ -2,8 +2,6 @@ import styled, { keyframes } from "styled-components";
 import { useState, useEffect } from "react";
 import axiosCliente from "../axioCliente.js";
 
-
-
 export function FichaTemplate() {
   const [fichasData, setFichasData] = useState([]);
   const [newFicha, setNewFicha] = useState({
@@ -49,7 +47,7 @@ export function FichaTemplate() {
     const fetchSelectData = async () => {
       try {
         const programasRes = await axiosCliente.get("/progrmas");
-        setProgramas(programasRes.data);
+        setProgramas(programasRes.data.datos);
       } catch (error) {
         console.error("Error al cargar los datos para selects:", error);
       }
@@ -265,7 +263,7 @@ export function FichaTemplate() {
               </thead>
               <tbody>
                 {fichasData.map((ficha) => (
-                  <tr key={ficha.codigo}> 
+                  <tr key={ficha.codigo}>
                     <td>{ficha.codigo}</td>
                     <td>{ficha.inicio_fecha.slice(0, 10)}</td>
                     <td>{ficha.fin_lectiva.slice(0, 10)}</td>
@@ -274,10 +272,14 @@ export function FichaTemplate() {
                     <td>{ficha.sede}</td>
                     <td>{ficha.estado}</td>
                     <td>
-                      <button onClick={() => handleEdit(ficha)}>Editar</button>
-                      <button onClick={() => handleDelete(ficha.codigo)}>
-                        Eliminar
-                      </button>
+                      <ActionsContainer>
+                        <ActionButton onClick={() => handleEdit(ficha)} color="blue">
+                          Editar
+                        </ActionButton>
+                        <ActionButton onClick={() => handleDelete(ficha.codigo)} color="red">
+                          Eliminar
+                        </ActionButton>
+                      </ActionsContainer>
                     </td>
                   </tr>
                 ))}
@@ -350,6 +352,26 @@ const Button = styled.button`
   }
 `;
 
+const ActionsContainer = styled.div`
+  display: flex;
+  gap: 10px;  // Espacio entre los botones
+`;
+
+const ActionButton = styled.button`
+  padding: 8px 12px;
+  background-color: ${(props) => (props.color === 'blue' ? '#007bff' : '#dc3545')};
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: ${(props) => (props.color === 'blue' ? '#0056b3' : '#c82333')};
+  }
+`;
+
 const Message = styled.div`
   margin-top: 15px;
   color: ${(props) => (props.success ? "green" : "red")};
@@ -380,4 +402,3 @@ const Table = styled.table`
     background-color: #f4f4f4;
   }
 `;
-
