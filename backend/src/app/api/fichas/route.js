@@ -12,6 +12,7 @@ export async function GET() {
         Programas: {
           select: {
             nombre_programa: true,
+            sigla: true,
           }
         }
       },

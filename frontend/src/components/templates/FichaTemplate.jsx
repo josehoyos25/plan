@@ -2,11 +2,7 @@ import styled, { keyframes } from "styled-components";
 import { useState, useEffect } from "react";
 import axiosCliente from "../axioCliente.js";
 
-// Opciones de sedes (modificadas para que coincidan con el formato de ambientes)
-const SEDE_OPTIONS = [
-  { value: "centro", label: "Centro" },
-  { value: "Yamboro", label: "Yamboró" },
-];
+
 
 export function FichaTemplate() {
   const [fichasData, setFichasData] = useState([]);
@@ -24,6 +20,7 @@ export function FichaTemplate() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [programas, setProgramas] = useState([]);
+  const sedes = ["centro", "Yamboro"];
   const estados = ["lectiva", "electiva", "finalizada"]; // Opciones de estado
 
   useEffect(() => {
@@ -220,9 +217,9 @@ export function FichaTemplate() {
               required
             >
               <option value="">Seleccione una sede</option>
-              {SEDE_OPTIONS.map((sede) => (
-                <option key={sede.value} value={sede.value}>
-                  {sede.label}
+              {sedes.map((sede) => (
+                <option key={sede} value={sede}>
+                  {sede}
                 </option>
               ))}
             </Select>
@@ -268,12 +265,12 @@ export function FichaTemplate() {
               </thead>
               <tbody>
                 {fichasData.map((ficha) => (
-                  <tr key={ficha.codigo}>
+                  <tr key={ficha.codigo}> 
                     <td>{ficha.codigo}</td>
                     <td>{ficha.inicio_fecha.slice(0, 10)}</td>
                     <td>{ficha.fin_lectiva.slice(0, 10)}</td>
                     <td>{ficha.fin_ficha.slice(0, 10)}</td>
-                    <td>{ficha.programa.nombre_programa}</td> {/* Asegúrate de que esto sea correcto */}
+                    <td>{ficha.Programas.sigla}</td> {/* Asegúrate de que esto sea correcto */}
                     <td>{ficha.sede}</td>
                     <td>{ficha.estado}</td>
                     <td>
