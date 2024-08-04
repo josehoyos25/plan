@@ -4,5 +4,6 @@ export { FichaTemplate } from './templates/FichaTemplate';
 export { InstructorTemplate } from './templates/InstructorTemplate';
 export { HorariosTemplate } from './templates/HorariosTemplate';
 export { UsuarioTemplate } from './templates/UsuarioTemplate';
+export { VinculacionesTemplate } from './templates/VinculacionTemplate';
 export { Icono } from './atomos/Icono';
 export { Btnsave } from './moleculas/Btnsave';

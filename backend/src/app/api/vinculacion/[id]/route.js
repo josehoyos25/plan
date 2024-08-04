@@ -57,7 +57,7 @@ try {
         area: data.area,
     },
     });
-    return NextResponse.json({ message: "Vinculación Actualizada" }, { status: 200 });
+    return NextResponse.json({ message: "Vinculación Actualizada", vincular: updatedVinculacion }, { status: 200 });
 } catch (error) {
     return handleErrors(error);
 }

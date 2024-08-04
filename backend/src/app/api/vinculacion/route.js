@@ -9,7 +9,11 @@ export async function GET() {
 try {
     const vinculacion = await prisma.vinculacion.findMany({
     include: {
-
+      Personas: {
+        select: {
+        nombres: true,
+        }
+      },
     },
     });
     return NextResponse.json({ datos: vinculacion }, { status: 200 });

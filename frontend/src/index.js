@@ -7,6 +7,7 @@ export { Fichas } from './pages/fichas';
 export { Instructores } from './pages/instructores';
 export { Horarios } from './pages/horarios';
 export { Usuarios } from './pages/usuarios';
+export { Vinculaciones} from './pages/vinculacion';
 export { MyRoutes } from './routers/routes';
 export { supabase } from './supabase/supabase.config';
 export { DataModulosConfiguracion, DesplegableUser, LinksArray, SecondarylinksArray, TemasData, TipoDocData, TipouserData } from './utils/dataEstatica';

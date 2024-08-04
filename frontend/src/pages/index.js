@@ -4,3 +4,4 @@ export { Fichas } from './fichas';
 export { Instructores } from './instructores';
 export { Horarios } from './horarios';
 export { Usuarios } from './usuarios';
+export { Vinculaciones } from './vinculacion';

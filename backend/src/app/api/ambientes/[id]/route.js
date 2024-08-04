@@ -52,12 +52,12 @@ try {
     where: { id_ambiente: parseInt(params.id) },
     data: {
         nombre_amb: data.nombre_amb,
-        municipio: data.municipio,
+        municipio: Number(data.municipio),
         sede: data. sede,
         estado: data.estado,
     },
     });
-    return NextResponse.json({ message: "Ambiente Actualizado" }, { status: 200 });
+    return NextResponse.json({ message: "Ambiente Actualizado", ambiente: updatedAmbiente }, { status: 200 });
 } catch (error) {
     return handleErrors(error);
 }

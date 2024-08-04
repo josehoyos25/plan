@@ -4,5 +4,6 @@ export { FichaTemplate } from './FichaTemplate';
 export { HorariosTemplate } from './HorariosTemplate';
 export { InstructorTemplate } from './InstructorTemplate';
 export { UsuarioTemplate } from './UsuarioTemplate';
+export { VinculacionesTemplate } from './VinculacionTemplate';
 
 

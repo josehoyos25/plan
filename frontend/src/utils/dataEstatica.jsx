@@ -50,6 +50,11 @@ export const LinksArray = [
     icon: <v.iconoreact />,
     to: "/usuarios",
   },
+  {
+    label: "Vinculaciones",
+    icon: <v.iconoreact />,
+    to: "/vinculaciones",
+  },
  
 ];
 export const SecondarylinksArray = [
