@@ -10,8 +10,8 @@ export async function GET() {
     const personas = await prisma.personas.findMany({
       include: {
         Vinculacion: true, // Relación con Vinculación
-        Municipios: true, // Relación con Municipios
-      },
+        Municipios: true,
+      }
     });
     return NextResponse.json({ datos: personas }, { status: 200 });
   } catch (error) {
@@ -24,7 +24,7 @@ export async function POST(request) {
       const data = await request.json();
       const persona = await prisma.personas.create({
         data: {
-          identificacion: data.identificacion,
+          identificacion: Number(data.identificacion),
           nombres: data.nombres,
           correo: data.correo,
           telefono: data.telefono,
