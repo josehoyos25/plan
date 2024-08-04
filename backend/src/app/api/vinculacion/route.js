@@ -7,7 +7,7 @@ return new NextResponse(error.message, { status: 500 });
 
 export async function GET() {
 try {
-    const vinculacion = await prisma.vinculacion.findMany({
+    const vincular = await prisma.vinculacion.findMany({
     include: {
       Personas: {
         select: {
@@ -16,7 +16,7 @@ try {
       },
     },
     });
-    return NextResponse.json({ datos: vinculacion }, { status: 200 });
+    return NextResponse.json({ datos: vincular }, { status: 200 });
 } catch (error) {
     return handleErrors(error);
 }
@@ -42,10 +42,10 @@ export async function POST(request) {
 
     const vincular = await prisma.vinculacion.create({
       data: {
-        instructor: data.instructor,
+        instructor: Number(data.instructor),
         tipo: data.tipo,
         sede: data.sede,
-        area: data.area,
+        area: Number(data.area),
       },
     });
     console.log('Vinculación creada:', vincular); // Verificar la respuesta de Prisma

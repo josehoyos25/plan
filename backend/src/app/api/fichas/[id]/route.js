@@ -63,7 +63,7 @@ export async function PUT(request, { params }) {
         inicio_fecha: new Date(data.inicio_fecha),
         fin_lectiva: new Date(data.fin_lectiva),
         fin_ficha: new Date(data.fin_ficha),
-        programa: { set: data.programa }, // Use the `set` method to update the relation
+        programa: Number(data.programa), // Use the `set` method to update the relation
         sede: data.sede,
         estado: data.estado,
       },
