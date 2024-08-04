@@ -93,16 +93,17 @@ export function FichaTemplate() {
         setFichasData([...fichasData, res.data]);
         setSuccess("Ficha creada con éxito.");
       }
-      setNewFicha({
-        codigo: "",
-        inicio_fecha: "",
-        fin_lectiva: "",
-        fin_ficha: "",
-        programa: "",
-        sede: "",
-        estado: "",
-      });
-      setSelectedFicha(null); // Restablecer la ficha seleccionada
+      //setNewFicha({
+      //  codigo: "",
+      //  inicio_fecha: "",
+      //  fin_lectiva: "",
+      //  fin_ficha: "",
+      //  programa: "",
+      //  sede: "",
+      //  estado: "",
+      //});
+      //setSelectedFicha(null); // Restablecer la ficha seleccionada
+      window.location.reload();
     } catch (error) {
       console.error(error);
       setError("Error al guardar la ficha.");
